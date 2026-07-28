@@ -32,17 +32,24 @@ API** copy:
 - Project URL
 - `anon` public key
 
-### Step 2 — Run the database migrations
+### Step 2 — Run the database setup
 
-In the Supabase dashboard **SQL Editor**, run the files in `supabase/migrations`
-**in order**:
+**Easiest:** open the Supabase dashboard **SQL Editor**, paste the whole of
+`supabase/setup-all.sql`, and click **Run**. That one file creates every table,
+policy, the storage bucket, and the demo seed data in the right order.
+
+<details>
+<summary>Or run the pieces individually</summary>
+
+Run the files in `supabase/migrations` **in order**, then `supabase/seed.sql`:
 
 1. `0001_init.sql` — tables, enums, triggers, RLS enabled
 2. `0002_policies.sql` — row-level-security policies (tenancy + roles)
 3. `0003_storage.sql` — the private `sop-photos` bucket + its policies
+4. `seed.sql` — demo restaurant, users, and the SOP catalog
 
-Then optionally run `supabase/seed.sql` for a demo restaurant, users, and the
-SOP catalog. (Or use the Supabase CLI: `supabase db push`.)
+(Or use the Supabase CLI: `supabase db push`.)
+</details>
 
 > The SOP catalog (`sops` table) **must** be seeded — the app resolves each SOP
 > by its `slug` (`opening` / `temp` / `cash`). `seed.sql` does this.
