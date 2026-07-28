@@ -1,0 +1,19 @@
+{
+  "name": "ROOS — Daily SOP Execution",
+  "short_name": "ROOS SOP",
+  "description": "Restaurant Operations OS — daily SOP execution and manager oversight.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#161826",
+  "theme_color": "#161826",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

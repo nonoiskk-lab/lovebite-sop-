@@ -8,6 +8,7 @@ import {
   statusStyle,
 } from "@/lib/status";
 import { formatToday } from "@/lib/date";
+import { downloadDailyReport } from "@/lib/export-report";
 import { Card, CardKicker, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@/components/ui/tag";
@@ -30,7 +31,12 @@ export function ManagerDashboard() {
   const submissions = useStore((s) => s.submissions);
   const auditLog = useStore((s) => s.auditLog);
   const resolveSubmission = useStore((s) => s.resolveSubmission);
-  const exportReport = useStore((s) => s.exportReport);
+  const setToast = useStore((s) => s.setToast);
+
+  const exportReport = () => {
+    downloadDailyReport(submissions);
+    setToast("Daily report exported.");
+  };
 
   const attention = submissions.filter((x) => ATTENTION_STATUSES.includes(x.status));
   const pendingCount = attention.length;

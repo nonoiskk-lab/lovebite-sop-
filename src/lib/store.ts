@@ -9,15 +9,13 @@ import {
   type SopId,
   type SubmissionStatus,
 } from "./sops";
+import type { PhotoKind, PhotoUpload } from "./data-service";
+import { getDataService } from "./data";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Data-layer shapes.
-
-   `Submission` and `AuditEntry` are the two records this Phase-1 store keeps in
-   memory. They map 1:1 to the `sop_submissions` and `audit_logs` tables in the
-   suggested Supabase schema (see supabase/migrations). Swapping this store for
-   real persistence means replacing the action bodies below with Supabase
-   mutations + TanStack Query reads — the component API stays the same.
+   Data-layer shapes. `Submission` / `AuditEntry` map 1:1 to the
+   `sop_submissions` / `audit_logs` tables. The store keeps a client cache and
+   delegates all persistence to the active DataService (in-memory or Supabase).
    ═══════════════════════════════════════════════════════════════════════ */
 
 export interface MetaEntry {
@@ -44,7 +42,6 @@ export interface AuditEntry {
 }
 
 export interface ConfirmPayload {
-  /** Phosphor icon name. */
   icon: string;
   title: string;
   message: string;
@@ -52,12 +49,14 @@ export interface ConfirmPayload {
 
 export type ResolveAction = "approve" | "reject" | "acknowledge";
 
+export interface PhotoState {
+  previewUrl: string | null;
+  blob: Blob | null;
+}
+
 interface FlowState {
   checked: Record<number, boolean>;
-  beforePhoto: boolean;
-  afterPhoto: boolean;
-  proofPhoto: boolean;
-  tempPhoto: boolean;
+  photos: Record<PhotoKind, PhotoState>;
   timerSeconds: number;
   timerRunning: boolean;
   fridgeTemp: string;
@@ -66,19 +65,23 @@ interface FlowState {
   posSales: string;
 }
 
-const emptyFlow: FlowState = {
+const emptyPhotos = (): Record<PhotoKind, PhotoState> => ({
+  before: { previewUrl: null, blob: null },
+  after: { previewUrl: null, blob: null },
+  equipment: { previewUrl: null, blob: null },
+  proof: { previewUrl: null, blob: null },
+});
+
+const emptyFlow = (): FlowState => ({
   checked: {},
-  beforePhoto: false,
-  afterPhoto: false,
-  proofPhoto: false,
-  tempPhoto: false,
+  photos: emptyPhotos(),
   timerSeconds: 0,
   timerRunning: false,
   fridgeTemp: "",
   freezerTemp: "",
   cashCounted: "",
   posSales: "",
-};
+});
 
 interface StoreState extends FlowState {
   role: Role;
@@ -87,13 +90,19 @@ interface StoreState extends FlowState {
   confirm: ConfirmPayload | null;
   toast: string | null;
 
-  // role
+  initialized: boolean;
+  loading: boolean;
+  error: string | null;
+
+  // lifecycle / data
+  init: () => Promise<void>;
   setRole: (role: Role) => void;
 
-  // flow lifecycle
+  // flow
   resetFlow: () => void;
   toggleCheck: (i: number) => void;
-  togglePhoto: (key: "beforePhoto" | "afterPhoto" | "proofPhoto" | "tempPhoto") => void;
+  setPhoto: (kind: PhotoKind, blob: Blob, previewUrl: string) => void;
+  clearPhoto: (kind: PhotoKind) => void;
   startTimer: () => void;
   pauseTimer: () => void;
   tickTimer: () => void;
@@ -105,14 +114,13 @@ interface StoreState extends FlowState {
   // mutations
   submitFlow: (sopId: SopId) => ConfirmPayload;
   resolveSubmission: (id: string, action: ResolveAction) => void;
-  exportReport: () => void;
+  setToast: (msg: string) => void;
   clearToast: () => void;
 
-  // reads
   latestFor: (sopId: SopId) => Submission | null;
 }
 
-/* — small time/format helpers (client-side; run on user interaction) — */
+/* — helpers — */
 function nowTime(): string {
   return new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
@@ -123,62 +131,74 @@ export function fmtDuration(totalSeconds: number): string {
   return `${m}m ${String(s).padStart(2, "0")}s`;
 }
 
-let idCounter = 0;
-function uid(prefix: string): string {
-  idCounter += 1;
-  return `${prefix}-${Date.now()}-${idCounter}`;
+function uid(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-/* — seed data (mirrors the prototype's initial state) — */
-const SEED_SUBMISSIONS: Submission[] = [
-  {
-    id: "s1",
-    sopId: "temp",
-    sopName: "Temperature Log",
-    role: "kitchen",
-    roleLabel: "Kitchen",
-    actor: "Ravi Kumar",
-    submittedAt: "11:04 AM",
-    status: "flagged",
-    meta: [
-      { key: "Fridge", value: "4.1°C" },
-      { key: "Freezer", value: "-9°C" },
-      { key: "Note", value: "Freezer above -15°C threshold" },
-    ],
-  },
-];
-
-const SEED_AUDIT: AuditEntry[] = [
-  {
-    id: "a1",
-    time: "11:05 AM",
-    text: "System flagged Temperature Log — freezer reading -9°C exceeds -15°C safe threshold.",
-  },
-  { id: "a2", time: "11:04 AM", text: "Ravi Kumar submitted Temperature Log." },
-  { id: "a3", time: "7:10 AM", text: "Aisha Sen (Manager) approved Opening Checklist." },
-  {
-    id: "a4",
-    time: "6:58 AM",
-    text: "Ravi Kumar submitted Opening Checklist for approval.",
-  },
-];
+const PHOTO_KINDS: Record<SopId, PhotoKind[]> = {
+  opening: ["before", "after"],
+  temp: ["equipment"],
+  cash: ["proof"],
+};
 
 export const useStore = create<StoreState>((set, get) => ({
-  ...emptyFlow,
+  ...emptyFlow(),
   role: "kitchen",
-  submissions: SEED_SUBMISSIONS,
-  auditLog: SEED_AUDIT,
+  submissions: [],
+  auditLog: [],
   confirm: null,
   toast: null,
+  initialized: false,
+  loading: false,
+  error: null,
+
+  init: async () => {
+    if (get().initialized || get().loading) return;
+    set({ loading: true, error: null });
+    try {
+      const ds = getDataService();
+      const [submissions, auditLog] = await Promise.all([
+        ds.listSubmissions(),
+        ds.listAudit(),
+      ]);
+      set({ submissions, auditLog, initialized: true, loading: false });
+    } catch (e) {
+      set({
+        loading: false,
+        initialized: true,
+        error: e instanceof Error ? e.message : "Failed to load data.",
+      });
+    }
+  },
 
   setRole: (role) => set({ role }),
 
-  resetFlow: () => set({ ...emptyFlow, confirm: null }),
+  resetFlow: () => {
+    // Revoke any preview URLs from the previous run to avoid leaks.
+    const { photos } = get();
+    Object.values(photos).forEach((p) => {
+      if (p.previewUrl) URL.revokeObjectURL(p.previewUrl);
+    });
+    set({ ...emptyFlow(), confirm: null });
+  },
 
   toggleCheck: (i) =>
     set((s) => ({ checked: { ...s.checked, [i]: !s.checked[i] } })),
 
-  togglePhoto: (key) => set((s) => ({ [key]: !s[key] }) as Partial<StoreState>),
+  setPhoto: (kind, blob, previewUrl) =>
+    set((s) => {
+      const prev = s.photos[kind];
+      if (prev.previewUrl) URL.revokeObjectURL(prev.previewUrl);
+      return { photos: { ...s.photos, [kind]: { blob, previewUrl } } };
+    }),
+
+  clearPhoto: (kind) =>
+    set((s) => {
+      const prev = s.photos[kind];
+      if (prev.previewUrl) URL.revokeObjectURL(prev.previewUrl);
+      return { photos: { ...s.photos, [kind]: { previewUrl: null, blob: null } } };
+    }),
 
   startTimer: () => set({ timerRunning: true }),
   pauseTimer: () => set({ timerRunning: false }),
@@ -196,10 +216,12 @@ export const useStore = create<StoreState>((set, get) => ({
     let meta: MetaEntry[] = [];
     let confirm: ConfirmPayload;
 
+    const has = (k: PhotoKind) => s.photos[k].previewUrl !== null;
+
     if (sopId === "opening") {
       const items = def.items ?? [];
       const checkedCount = items.filter((_, i) => s.checked[i]).length;
-      const photoCount = (s.beforePhoto ? 1 : 0) + (s.afterPhoto ? 1 : 0);
+      const photoCount = (has("before") ? 1 : 0) + (has("after") ? 1 : 0);
       meta = [
         { key: "Checklist", value: `${checkedCount}/${items.length}` },
         { key: "Time taken", value: fmtDuration(s.timerSeconds) },
@@ -221,7 +243,7 @@ export const useStore = create<StoreState>((set, get) => ({
       meta = [
         { key: "Fridge", value: `${s.fridgeTemp}°C` },
         { key: "Freezer", value: `${s.freezerTemp}°C` },
-        { key: "Photo", value: s.tempPhoto ? "Captured" : "—" },
+        { key: "Photo", value: has("equipment") ? "Captured" : "—" },
       ];
       status = flagged ? "flagged" : "logged";
       confirm = flagged
@@ -237,7 +259,6 @@ export const useStore = create<StoreState>((set, get) => ({
             message: "Reading auto-logged. No manager action needed.",
           };
     } else {
-      // cash
       const counted = parseFloat(s.cashCounted) || 0;
       const pos = parseFloat(s.posSales) || 0;
       const diff = counted - pos;
@@ -245,7 +266,7 @@ export const useStore = create<StoreState>((set, get) => ({
         { key: "Counted", value: `₹${counted.toFixed(2)}` },
         { key: "POS total", value: `₹${pos.toFixed(2)}` },
         { key: "Difference", value: `${diff >= 0 ? "+" : ""}₹${diff.toFixed(2)}` },
-        { key: "Proof", value: s.proofPhoto ? "Attached" : "None" },
+        { key: "Proof", value: has("proof") ? "Attached" : "None" },
       ];
       status = "pending";
       confirm = {
@@ -256,7 +277,7 @@ export const useStore = create<StoreState>((set, get) => ({
     }
 
     const submission: Submission = {
-      id: uid("sub"),
+      id: uid(),
       sopId: def.id,
       sopName: def.name,
       role: s.role,
@@ -266,49 +287,71 @@ export const useStore = create<StoreState>((set, get) => ({
       status,
       meta,
     };
-    const auditText = `${actor} submitted ${def.name}${
-      status === "flagged" ? " — flagged out of range." : "."
-    }`;
+    const audit: AuditEntry = {
+      id: uid(),
+      time,
+      text: `${actor} submitted ${def.name}${
+        status === "flagged" ? " — flagged out of range." : "."
+      }`,
+    };
 
+    // Optimistic local update (keeps the UI instant + offline-tolerant).
     set((prev) => ({
       confirm,
       submissions: [submission, ...prev.submissions],
-      auditLog: [{ id: uid("a"), time, text: auditText }, ...prev.auditLog],
+      auditLog: [audit, ...prev.auditLog],
     }));
+
+    // Persist in the background; surface an error but never lose the entry.
+    const photos: PhotoUpload[] = PHOTO_KINDS[sopId]
+      .map((kind) => {
+        const p = s.photos[kind];
+        return p.blob
+          ? { kind, blob: p.blob, filename: `${kind}.jpg` }
+          : null;
+      })
+      .filter((p): p is PhotoUpload => p !== null);
+
+    getDataService()
+      .createSubmission(submission, audit, photos)
+      .catch((e) =>
+        set({ error: e instanceof Error ? e.message : "Failed to save submission." }),
+      );
 
     return confirm;
   },
 
   resolveSubmission: (id, action) => {
     const time = nowTime();
-    set((prev) => {
-      const sub = prev.submissions.find((x) => x.id === id);
-      if (!sub) return prev;
-      const statusMap: Record<ResolveAction, SubmissionStatus> = {
-        approve: "approved",
-        reject: "rejected",
-        acknowledge: "acknowledged",
-      };
-      const verbMap: Record<ResolveAction, string> = {
-        approve: "approved",
-        reject: "rejected",
-        acknowledge: "acknowledged",
-      };
-      const newStatus = statusMap[action];
-      const text = `${ROLE_ACTOR.manager} ${verbMap[action]} ${sub.sopName} from ${sub.actor}.`;
-      return {
-        submissions: prev.submissions.map((x) =>
-          x.id === id ? { ...x, status: newStatus } : x,
-        ),
-        auditLog: [{ id: uid("a"), time, text }, ...prev.auditLog],
-      };
-    });
+    const sub = get().submissions.find((x) => x.id === id);
+    if (!sub) return;
+    const statusMap: Record<ResolveAction, SubmissionStatus> = {
+      approve: "approved",
+      reject: "rejected",
+      acknowledge: "acknowledged",
+    };
+    const newStatus = statusMap[action];
+    const audit: AuditEntry = {
+      id: uid(),
+      time,
+      text: `${ROLE_ACTOR.manager} ${statusMap[action]} ${sub.sopName} from ${sub.actor}.`,
+    };
+
+    set((prev) => ({
+      submissions: prev.submissions.map((x) =>
+        x.id === id ? { ...x, status: newStatus } : x,
+      ),
+      auditLog: [audit, ...prev.auditLog],
+    }));
+
+    getDataService()
+      .updateSubmissionStatus(id, newStatus, audit)
+      .catch((e) =>
+        set({ error: e instanceof Error ? e.message : "Failed to update submission." }),
+      );
   },
 
-  exportReport: () => {
-    set({ toast: "Daily Excel report exported to Manager Reports." });
-  },
-
+  setToast: (msg) => set({ toast: msg }),
   clearToast: () => set({ toast: null }),
 
   latestFor: (sopId) => {

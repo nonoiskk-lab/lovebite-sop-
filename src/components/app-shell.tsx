@@ -1,15 +1,28 @@
 "use client";
 
 import * as React from "react";
+import { useEffect } from "react";
 import { RoleSwitcher } from "@/components/role-switcher";
+import { UserMenu } from "@/components/auth/user-menu";
+import { AuthGate } from "@/components/auth/auth-gate";
 import { Toast } from "@/components/toast";
+import { useStore } from "@/lib/store";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { Icon } from "@/components/icon";
 
 /**
- * Top-level chrome for the Phase-1 preview: the ROOS header + the dev role
- * switcher, with the active screen rendered below. Everything under here is
- * client-rendered because it reads the shared store.
+ * Top-level chrome: the ROOS header + (demo) role switcher or (configured)
+ * user menu, an error banner, and the auth-gated active screen. Kicks off the
+ * one-time data load.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const init = useStore((s) => s.init);
+  const error = useStore((s) => s.error);
+
+  useEffect(() => {
+    void init();
+  }, [init]);
+
   return (
     <div
       style={{
@@ -40,13 +53,35 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <h2 style={{ marginTop: 2, marginBottom: 0 }}>Daily SOP Execution</h2>
         </div>
         <div style={{ marginLeft: "auto" }}>
-          <RoleSwitcher />
+          {isSupabaseConfigured ? <UserMenu /> : <RoleSwitcher />}
         </div>
       </header>
 
       <div className="hr" style={{ margin: 0 }} />
 
-      <main>{children}</main>
+      {error && (
+        <div
+          role="alert"
+          style={{
+            display: "flex",
+            gap: 8,
+            alignItems: "center",
+            padding: "10px 14px",
+            borderRadius: "var(--radius-md)",
+            background: "var(--color-accent-900)",
+            border: "1px solid var(--color-accent-700)",
+            fontSize: 13,
+            color: "var(--color-accent-200)",
+          }}
+        >
+          <Icon name="Warning" size={16} color="var(--color-accent-300)" style={{ flex: "none" }} />
+          {error}
+        </div>
+      )}
+
+      <main>
+        <AuthGate>{children}</AuthGate>
+      </main>
 
       <Toast />
     </div>

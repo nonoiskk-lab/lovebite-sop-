@@ -46,15 +46,15 @@ export function SopFlow({ sopId, stepIndex }: { sopId: string; stepIndex: number
   const canProceed = (): boolean => {
     switch (kind) {
       case "before":
-        return s.beforePhoto;
+        return s.photos.before.previewUrl !== null;
       case "checklist":
         return (def.items ?? []).every((_, i) => s.checked[i]);
       case "after":
-        return s.afterPhoto;
+        return s.photos.after.previewUrl !== null;
       case "readings":
         return s.fridgeTemp !== "" && s.freezerTemp !== "";
       case "photo":
-        return def.id === "temp" ? s.tempPhoto : true; // cash proof is optional
+        return def.id === "temp" ? s.photos.equipment.previewUrl !== null : true; // cash proof optional
       case "count":
         return s.cashCounted !== "";
       case "pos":
@@ -129,8 +129,9 @@ export function SopFlow({ sopId, stepIndex }: { sopId: string; stepIndex: number
           <PhotoStep
             title="Before Photo"
             description="Capture the dining area before opening tasks begin."
-            captured={s.beforePhoto}
-            onToggle={() => s.togglePhoto("beforePhoto")}
+            previewUrl={s.photos.before.previewUrl}
+            onCapture={(b, u) => s.setPhoto("before", b, u)}
+            onClear={() => s.clearPhoto("before")}
           />
         )}
         {kind === "checklist" && <ChecklistStep />}
@@ -138,8 +139,9 @@ export function SopFlow({ sopId, stepIndex }: { sopId: string; stepIndex: number
           <PhotoStep
             title="After Photo"
             description="Confirm the space is ready to receive guests."
-            captured={s.afterPhoto}
-            onToggle={() => s.togglePhoto("afterPhoto")}
+            previewUrl={s.photos.after.previewUrl}
+            onCapture={(b, u) => s.setPhoto("after", b, u)}
+            onClear={() => s.clearPhoto("after")}
           />
         )}
         {kind === "review" && def.id === "opening" && <OpeningReviewStep />}
@@ -149,8 +151,9 @@ export function SopFlow({ sopId, stepIndex }: { sopId: string; stepIndex: number
           <PhotoStep
             title="Equipment Photo"
             description="Photograph the unit display showing the reading."
-            captured={s.tempPhoto}
-            onToggle={() => s.togglePhoto("tempPhoto")}
+            previewUrl={s.photos.equipment.previewUrl}
+            onCapture={(b, u) => s.setPhoto("equipment", b, u)}
+            onClear={() => s.clearPhoto("equipment")}
           />
         )}
         {kind === "review" && def.id === "temp" && <TempReviewStep />}
@@ -161,8 +164,9 @@ export function SopFlow({ sopId, stepIndex }: { sopId: string; stepIndex: number
           <PhotoStep
             title="Proof Photo"
             optional
-            captured={s.proofPhoto}
-            onToggle={() => s.togglePhoto("proofPhoto")}
+            previewUrl={s.photos.proof.previewUrl}
+            onCapture={(b, u) => s.setPhoto("proof", b, u)}
+            onClear={() => s.clearPhoto("proof")}
             emptyLabel="Tap to capture, or skip"
           />
         )}

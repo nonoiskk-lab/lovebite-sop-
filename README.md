@@ -14,22 +14,31 @@ in the project's real stack, built pixel-close to the **Nocturne** design system
 - **Next.js 15** (App Router) + **React 19** + **TypeScript**
 - **Tailwind CSS v4** with the Nocturne tokens mapped into the theme
 - **shadcn/ui**-style primitives (`src/components/ui/*`), themed to Nocturne
-- **Zustand** for client state (the swappable data layer)
+- **Zustand** for client state (delegates to a swappable data service)
 - **Phosphor** icons (`@phosphor-icons/react`)
-- **Supabase** — schema + data-service seam in place; wiring is the next step
-  (see [Wiring Supabase](#wiring-supabase))
+- **Supabase** — auth, Postgres persistence, Storage photo uploads, and RLS,
+  all integrated and env-gated
+- **PWA** — installable, offline shell + service worker
+
+## Two modes
+
+The app runs the same UI in either mode and switches automatically:
+
+- **Demo mode (default, zero setup)** — in-memory + `localStorage` data, the dev
+  role switcher, camera capture kept as a local preview, real CSV export.
+- **Live mode** — set the two Supabase env vars and it switches to real auth
+  (`/login`), Postgres reads/writes, Storage uploads, and per-restaurant RLS.
+
+Full instructions in **[SETUP.md](./SETUP.md)**.
 
 ## Getting started
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000
+npm run dev      # http://localhost:3000  (demo mode, no env needed)
 npm run build    # production build (type-checked)
 npm run typecheck
 ```
-
-No environment variables are required for Phase 1 — it runs entirely on an
-in-memory store seeded with demo data.
 
 ## What's implemented
 
@@ -90,24 +99,22 @@ spacing scale, 8px radii, hairline-edge elevation, and the fading rules. All
 buttons are outlined (never filled); the accent is used as a line and a glow,
 never a flood. Nothing hard-codes a hex, font, or px the tokens already carry.
 
-## Wiring Supabase
+## Supabase integration
 
-Phase 1 is deliberately backend-free. The seam is ready:
+The backend is implemented, not just stubbed:
 
-1. `supabase/migrations/0001_init.sql` creates `restaurants`, `users`, `sops`,
-   `sop_submissions`, `sop_photos`, and `audit_logs` (UUID PKs, `created_at` /
-   `updated_at` / `created_by` / `updated_by` / soft-delete `deleted_at`, an
-   `updated_at` trigger, and RLS enabled ready for policies).
-2. Implement `DataService` (`src/lib/data-service.ts`) against Supabase —
-   queries + mutations + Storage uploads for photos + an append to `audit_logs`
-   on every state change.
-3. Point the Zustand actions in `src/lib/store.ts` at that service (reads via
-   TanStack Query, writes as authenticated mutations). The screens consume the
-   store's action surface, which already mirrors the service methods, so the UI
-   doesn't change.
-4. Replace the dev role switcher with real auth + role claims, and add the
-   loading / error / offline-queue states the PWA requirement calls for.
+- **Schema** — `supabase/migrations/0001_init.sql` (tables, enums, `updated_at`
+  trigger, RLS on), `0002_policies.sql` (tenancy + role RLS policies),
+  `0003_storage.sql` (private `sop-photos` bucket + policies). `seed.sql` seeds a
+  demo restaurant / users / SOP catalog.
+- **Data service** — `SupabaseDataService` (`src/lib/data/supabase.ts`) does the
+  real queries, mutations, Storage uploads, and audit-log appends;
+  `InMemoryDataService` backs demo mode. `getDataService()` picks one from env.
+- **Auth** — `AuthGate` requires a session in live mode and derives the role
+  from the user's `users` row; `/login` is a Supabase password sign-in. In demo
+  mode the dev role switcher stands in.
+- **Store** — Zustand actions do optimistic updates and delegate persistence to
+  the data service, surfacing a non-blocking error banner on failure.
 
-Copy `.env.example` to `.env.local` and fill in the Supabase keys once the
-service is implemented.
-```
+To turn it on, follow **[SETUP.md](./SETUP.md)** (create project → run
+migrations → add users → set two env vars). No code changes needed.

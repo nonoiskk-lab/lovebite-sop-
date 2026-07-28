@@ -1,32 +1,40 @@
 /**
- * Data-service contract.
+ * Data-service contract — the seam between the UI/store and persistence.
  *
- * The Phase-1 app is driven by the in-memory Zustand store (`store.ts`). This
- * interface is the seam where real persistence plugs in: implement it against
- * Supabase (queries + mutations + Storage uploads + an append to `audit_logs`)
- * and have the store call it instead of mutating local arrays. The screens
- * don't change — they already read/write through the store's action surface,
- * which mirrors these methods.
+ * Two implementations satisfy it:
+ *   • InMemoryDataService  — demo mode; localStorage-backed (no backend).
+ *   • SupabaseDataService  — real persistence, Storage uploads, audit rows.
  *
- * Kept dependency-free on purpose (no `@supabase/supabase-js` import) so the
- * Phase-1 build has no backend prerequisite. See README "Wiring Supabase".
+ * `getDataService()` (data/index.ts) picks one based on whether Supabase env
+ * is configured. The Zustand store talks only to this interface, so the
+ * screens are identical in both modes.
  */
-import type { ResolveAction, Submission } from "./store";
-import type { SopId } from "./sops";
+import type { AuditEntry, Submission } from "./store";
+import type { SubmissionStatus } from "./sops";
 
-export interface SubmitFlowInput {
-  sopId: SopId;
-  /** Serialized flow payload → stored in `sop_submissions.data` (jsonb). */
-  data: Record<string, unknown>;
-  /** Photos captured during the flow → uploaded to Storage + `sop_photos`. */
-  photos?: { kind: "before" | "after" | "equipment" | "proof"; file: File }[];
+export type PhotoKind = "before" | "after" | "equipment" | "proof";
+
+export interface PhotoUpload {
+  kind: PhotoKind;
+  blob: Blob;
+  filename: string;
 }
 
 export interface DataService {
+  /** All submissions, newest first. */
   listSubmissions(): Promise<Submission[]>;
-  latestFor(sopId: SopId): Promise<Submission | null>;
-  submitFlow(input: SubmitFlowInput): Promise<Submission>;
-  resolveSubmission(id: string, action: ResolveAction): Promise<Submission>;
-  /** Generates + returns a URL to the daily Excel report. */
-  exportDailyReport(): Promise<{ url: string }>;
+  /** Append-only audit log, newest first. */
+  listAudit(): Promise<AuditEntry[]>;
+  /** Persist a new submission (+ its audit row + any captured photos). */
+  createSubmission(
+    submission: Submission,
+    audit: AuditEntry,
+    photos?: PhotoUpload[],
+  ): Promise<void>;
+  /** Manager resolution — new status + an audit row. */
+  updateSubmissionStatus(
+    id: string,
+    status: SubmissionStatus,
+    audit: AuditEntry,
+  ): Promise<void>;
 }

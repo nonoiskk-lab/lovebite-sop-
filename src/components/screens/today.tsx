@@ -14,6 +14,7 @@ export function TodayScreen() {
   const role = useStore((s) => s.role);
   // Subscribe to submissions so status tags stay live after a submit.
   const submissions = useStore((s) => s.submissions);
+  const initialized = useStore((s) => s.initialized);
   const resetFlow = useStore((s) => s.resetFlow);
 
   const sops = sopsForRole(role);
@@ -43,7 +44,43 @@ export function TodayScreen() {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {sops.map((sop) => {
+        {!initialized &&
+          sops.map((sop) => (
+            <Card key={`skeleton-${sop.id}`} aria-hidden style={{ opacity: 0.5 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: "var(--radius-md)",
+                    background: "var(--color-neutral-800)",
+                    flex: "none",
+                  }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      width: "60%",
+                      height: 12,
+                      borderRadius: 4,
+                      background: "var(--color-neutral-800)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: "35%",
+                      height: 9,
+                      borderRadius: 4,
+                      background: "var(--color-neutral-800)",
+                      marginTop: 8,
+                    }}
+                  />
+                </div>
+              </div>
+            </Card>
+          ))}
+        {initialized &&
+          sops.map((sop) => {
           const latest = latestFor(sop.id);
           const st = statusStyle(latest ? latest.status : "not_started");
           return (
@@ -87,7 +124,7 @@ export function TodayScreen() {
             </Card>
           );
         })}
-        {sops.length === 0 && (
+        {initialized && sops.length === 0 && (
           <Card style={{ textAlign: "center", padding: 24 }} className="text-muted">
             No SOPs assigned to this role today.
           </Card>

@@ -12,15 +12,17 @@ const ITEM_COUNT = (SOP_DEFS.opening.items ?? []).length;
 export function PhotoStep({
   title,
   description,
-  captured,
-  onToggle,
+  previewUrl,
+  onCapture,
+  onClear,
   emptyLabel,
   optional,
 }: {
   title: string;
   description?: string;
-  captured: boolean;
-  onToggle: () => void;
+  previewUrl: string | null;
+  onCapture: (blob: Blob, previewUrl: string) => void;
+  onClear: () => void;
   emptyLabel?: string;
   optional?: boolean;
 }) {
@@ -35,7 +37,12 @@ export function PhotoStep({
       {description && (
         <p style={{ margin: 0, fontSize: 13, opacity: 0.75 }}>{description}</p>
       )}
-      <PhotoCapture captured={captured} onToggle={onToggle} emptyLabel={emptyLabel} />
+      <PhotoCapture
+        previewUrl={previewUrl}
+        onCapture={onCapture}
+        onClear={onClear}
+        emptyLabel={emptyLabel}
+      />
     </div>
   );
 }
@@ -43,11 +50,11 @@ export function PhotoStep({
 export function OpeningReviewStep() {
   const checked = useStore((s) => s.checked);
   const timerSeconds = useStore((s) => s.timerSeconds);
-  const beforePhoto = useStore((s) => s.beforePhoto);
-  const afterPhoto = useStore((s) => s.afterPhoto);
+  const photos = useStore((s) => s.photos);
 
   const checkedCount = Object.values(checked).filter(Boolean).length;
-  const photoCount = (beforePhoto ? 1 : 0) + (afterPhoto ? 1 : 0);
+  const photoCount =
+    (photos.before.previewUrl ? 1 : 0) + (photos.after.previewUrl ? 1 : 0);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
