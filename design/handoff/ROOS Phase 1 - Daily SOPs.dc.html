@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+  <link rel="stylesheet" href="_ds/nocturne-ca7e4424-98ce-4558-b064-f5c3adbd1eb9/styles.css">
+  <script src="_ds/nocturne-ca7e4424-98ce-4558-b064-f5c3adbd1eb9/_ds_bundle.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css">
+  <style>
+    body { margin: 0; }
+    a { color: var(--color-accent); }
+    a:hover { color: var(--color-accent-400); }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: var(--color-neutral-700); border-radius: 8px; }
+  </style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);padding:32px 40px 60px;box-sizing:border-box;display:flex;flex-direction:column;gap:28px;">
+
+  <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+    <div>
+      <div style="font-family:var(--font-heading);font-weight:600;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-accent);">ROOS · Phase 1 Prototype</div>
+      <h2 style="margin-top:2px;">Daily SOP Execution</h2>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:14px;">
+      <span style="font-size:12px;color:color-mix(in srgb, var(--color-text) 55%, transparent);">Viewing as</span>
+      <div class="seg">
+        <label class="seg-opt"><input type="radio" name="role" checked="{{ isRoleKitchen }}" onChange="{{ selectKitchen }}"><i class="ph ph-cooking-pot"></i>Kitchen Staff</label>
+        <label class="seg-opt"><input type="radio" name="role" checked="{{ isRoleFoh }}" onChange="{{ selectFoh }}"><i class="ph ph-storefront"></i>Front of House</label>
+        <label class="seg-opt"><input type="radio" name="role" checked="{{ isRoleManager }}" onChange="{{ selectManager }}"><i class="ph ph-chart-line-up"></i>Manager</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="hr" style="margin:0;"></div>
+
+  <sc-if value="{{ showMobile }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;justify-content:center;">
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" title="{{ mobileTitle }}" dark="{{ isDark }}" hint-size="402px,874px">
+
+        <div style="min-height:100%;background:var(--color-bg);color:var(--color-text);padding:18px 18px 32px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;">
+
+          <sc-if value="{{ onToday }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div style="font-size:12px;color:color-mix(in srgb, var(--color-text) 55%, transparent);">{{ todayDate }}</div>
+              <h3 style="margin:0;">Good morning, {{ staffName }}</h3>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <sc-for list="{{ sopList }}" as="sop" hint-placeholder-count="2">
+                <div class="card elev-sm" style="cursor:pointer;" onClick="{{ sop.open }}">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:38px;height:38px;border-radius:var(--radius-md);background:var(--color-accent-800);display:flex;align-items:center;justify-content:center;flex:none;">
+                      <i class="ph {{ sop.icon }}" style="font-size:19px;color:var(--color-accent-200);"></i>
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                      <div class="card-title">{{ sop.name }}</div>
+                      <div class="card-meta"><i class="ph ph-clock" style="font-size:12px;"></i>{{ sop.time }}</div>
+                    </div>
+                    <span class="tag {{ sop.tagClass }}">{{ sop.statusLabel }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div class="hr"></div>
+            <div style="font-size:12px;color:color-mix(in srgb, var(--color-text) 50%, transparent);display:flex;gap:8px;align-items:flex-start;">
+              <i class="ph ph-shield-check" style="font-size:15px;color:var(--color-accent-300);flex:none;margin-top:1px;"></i>
+              Every step is timestamped and photo-verified for compliance audit.
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ onFlow }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <button class="btn btn-icon btn-secondary" onClick="{{ prevStep }}"><i class="ph ph-arrow-left"></i></button>
+              <div style="flex:1;">
+                <div style="font-size:11px;color:color-mix(in srgb, var(--color-text) 55%, transparent);">{{ stepLabel }}</div>
+                <div style="height:5px;border-radius:4px;background:var(--color-neutral-800);overflow:hidden;margin-top:4px;">
+                  <div style="height:100%;border-radius:4px;background:var(--color-accent);width:{{ progressPercent }}%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <sc-if value="{{ showOpeningBefore }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <h4 style="margin:0;">Before Photo</h4>
+                <p style="margin:0;font-size:13px;opacity:0.75;">Capture the dining area before opening tasks begin.</p>
+                <div onClick="{{ toggleBeforePhoto }}" style="aspect-ratio:4/3;border-radius:var(--radius-md);border:1.5px dashed var(--color-divider);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;cursor:pointer;background:var(--color-surface);">
+                  <sc-if value="{{ beforePhoto }}" hint-placeholder-val="{{ false }}">
+                    <i class="ph ph-check-circle" style="font-size:34px;color:var(--color-accent-300);"></i>
+                    <span style="font-size:13px;">Photo captured</span>
+                  </sc-if>
+                  <sc-if value="{{ notBeforePhoto }}" hint-placeholder-val="{{ true }}">
+                    <i class="ph ph-camera" style="font-size:34px;opacity:0.6;"></i>
+                    <span style="font-size:13px;opacity:0.7;">Tap to capture</span>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ showOpeningChecklist }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <div class="card elev-sm" style="flex-direction:row;align-items:center;justify-content:space-between;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <i class="ph ph-timer" style="color:var(--color-accent-300);font-size:18px;"></i>
+                    <span style="font-family:var(--font-heading);font-size:20px;font-weight:600;letter-spacing:0.02em;">{{ timerDisplay }}</span>
+                  </div>
+                  <button class="btn btn-secondary" onClick="{{ toggleTimer }}">{{ timerButtonLabel }}</button>
+                </div>
+                <h4 style="margin:6px 0 0;">Opening Checklist</h4>
+                <sc-for list="{{ openingItems }}" as="item" hint-placeholder-count="7">
+                  <div class="card elev-sm" style="flex-direction:row;align-items:center;gap:10px;cursor:pointer;" onClick="{{ item.toggle }}">
+                    <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid var(--color-divider);display:flex;align-items:center;justify-content:center;flex:none;background:{{ item.dotBg }};border-color:{{ item.dotBorder }};">
+                      <sc-if value="{{ item.checked }}" hint-placeholder-val="{{ false }}"><i class="ph ph-check-bold" style="font-size:13px;color:var(--color-bg);"></i></sc-if>
+                    </div>
+                    <span style="font-size:14px;opacity:{{ item.textOpacity }};text-decoration:{{ item.textDecoration }};">{{ item.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ showOpeningAfter }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <h4 style="margin:0;">After Photo</h4>
+                <p style="margin:0;font-size:13px;opacity:0.75;">Confirm the space is ready to receive guests.</p>
+                <div onClick="{{ toggleAfterPhoto }}" style="aspect-ratio:4/3;border-radius:var(--radius-md);border:1.5px dashed var(--color-divider);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;cursor:pointer;background:var(--color-surface);">
+                  <sc-if value="{{ afterPhoto }}" hint-placeholder-val="{{ false }}">
+                    <i class="ph ph-check-circle" style="font-size:34px;color:var(--color-accent-300);"></i>
+                    <span style="font-size:13px;">Photo captured</span>
+                  </sc-if>
+                  <sc-if value="{{ notAfterPhoto }}" hint-placeholder-val="{{ true }}">
+                    <i class="ph ph-camera" style="font-size:34px;opacity:0.6;"></i>
+                    <span style="font-size:13px;opacity:0.7;">Tap to capture</span>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ showOpeningReview }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <h4 style="margin:0;">Review &amp; Submit</h4>
+                <div class="card elev-sm" style="gap:8px;">
+                  <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="opacity:0.7;">Checklist</span><span>{{ openingCheckedLabel }}</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="opacity:0.7;">Time taken</span><span>{{ timerDisplay }}</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="opacity:0.7;">Photos</span><span>{{ openingPhotoLabel }}</span></div>
+                </div>
+                <p style="margin:0;font-size:12px;opacity:0.65;">Submitting routes this to your manager for approval, with a timestamped audit entry.</p>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ showTempReadings }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <h4 style="margin:0;">Temperature Readings</h4>
+                <div class="field"><label>Refrigerator (°C)</label><input class="input" type="number" value="{{ fridgeTemp }}" onChange="{{ onFridgeChange }}" placeholder="e.g. 3.5"></div>
+                <div class="field"><label>Freezer (°C)</label><input class="input" type="number" value="{{ freezerTemp }}" onChange="{{ onFreezerChange }}" placeholder="e.g. -18"></div>
+                <sc-if value="{{ tempOutOfRange }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:var(--radius-md);background:var(--color-accent-900);border:1px solid var(--color-accent-700);">
+                    <i class="ph ph-warning" style="color:var(--color-accent-300);font-size:16px;flex:none;margin-top:1px;"></i>
+                    <span style="font-size:12px;color:var(--color-accent-200);">Reading outside safe range — this will alert the manager automatically.</span>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ showTempPhoto }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <h4 style="margin:0;">Equipment Photo</h4>
+                <p style="margin:0;font-size:13px;opacity:0.75;">Photograph the unit display showing the reading.</p>
+                <div onClick="{{ toggleTempPhoto }}" style="aspect-ratio:4/3;border-radius:var(--radius-md);border:1.5px dashed var(--color-divider);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;cursor:pointer;background:var(--color-surface);">
+                  <sc-if value="{{ tempPhoto }}" hint-placeholder-val="{{ false }}">
+                    <i class="ph ph-check-circle" style="font-size:34px;color:var(--color-accent-300);"></i>
+                    <span style="font-size:13px;">Photo captured</span>
+                  </sc-if>
+                  <sc-if value="{{ notTempPhoto }}" hint-placeholder-val="{{ true }}">
+                    <i class="ph ph-camera" style="font-size:34px;opacity:0.6;"></i>
+                    <span style="font-size:13px;opacity:0.7;">Tap to capture</span>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ showTempReview }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <h4 style="margin:0;">Review &amp; Submit</h4>
+                <div class="card elev-sm" style="gap:8px;">
+                  <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="opacity:0.7;">Fridge</span><span>{{ fridgeTemp }}°C</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="opacity:0.7;">Freezer</span><span>{{ freezerTemp }}°C</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="opacity:0.7;">Status</span><span class="tag {{ tempReviewTagClass }}">{{ tempReviewLabel }}</span></div>
+                </div>
+                <p style="margin:0;font-size:12px;opacity:0.65;">{{ tempReviewNote }}</p>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ showCashCount }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <h4 style="margin:0;">Cash Count</h4>
+                <div class="field"><label>Counted cash (₹)</label><input class="input" type="number" value="{{ cashCounted }}" onChange="{{ onCashChange }}" placeholder="e.g. 18250"></div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ showCashPos }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <h4 style="margin:0;">Match POS Sales</h4>
+                <div class="field"><label>POS system total (₹)</label><input class="input" type="number" value="{{ posSales }}" onChange="{{ onPosChange }}" placeholder="e.g. 18300"></div>
+                <div class="card elev-sm" style="flex-direction:row;justify-content:space-between;">
+                  <span style="font-size:13px;opacity:0.7;">Difference</span>
+                  <span style="font-family:var(--font-heading);font-weight:600;color:{{ cashDiffColor }};">{{ cashDiffLabel }}</span>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ showCashPhoto }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <h4 style="margin:0;">Proof Photo <span style="opacity:0.5;font-weight:400;font-size:12px;">(optional)</span></h4>
+                <div onClick="{{ toggleProofPhoto }}" style="aspect-ratio:4/3;border-radius:var(--radius-md);border:1.5px dashed var(--color-divider);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;cursor:pointer;background:var(--color-surface);">
+                  <sc-if value="{{ proofPhoto }}" hint-placeholder-val="{{ false }}">
+                    <i class="ph ph-check-circle" style="font-size:34px;color:var(--color-accent-300);"></i>
+                    <span style="font-size:13px;">Photo captured</span>
+                  </sc-if>
+                  <sc-if value="{{ notProofPhoto }}" hint-placeholder-val="{{ true }}">
+                    <i class="ph ph-camera" style="font-size:34px;opacity:0.6;"></i>
+                    <span style="font-size:13px;opacity:0.7;">Tap to capture, or skip</span>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ showCashReview }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <h4 style="margin:0;">Review &amp; Submit</h4>
+                <div class="card elev-sm" style="gap:8px;">
+                  <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="opacity:0.7;">Counted</span><span>₹{{ cashCounted }}</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="opacity:0.7;">POS total</span><span>₹{{ posSales }}</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="opacity:0.7;">Difference</span><span style="color:{{ cashDiffColor }};">{{ cashDiffLabel }}</span></div>
+                </div>
+                <p style="margin:0;font-size:12px;opacity:0.65;">Submitting generates the daily Excel summary and routes to your manager for approval.</p>
+              </div>
+            </sc-if>
+
+            <div style="margin-top:auto;padding-top:8px;">
+              <button class="btn btn-primary btn-block" style="min-height:48px;font-size:15px;" disabled="{{ nextDisabled }}" onClick="{{ nextStep }}">{{ nextButtonLabel }}</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ onConfirm }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px 10px;">
+              <div style="width:64px;height:64px;border-radius:50%;background:var(--color-accent-800);display:flex;align-items:center;justify-content:center;">
+                <i class="ph {{ confirmIcon }}" style="font-size:32px;color:var(--color-accent-200);"></i>
+              </div>
+              <h3 style="margin:0;">{{ confirmTitle }}</h3>
+              <p style="margin:0;font-size:13px;opacity:0.75;max-width:260px;">{{ confirmMessage }}</p>
+              <button class="btn btn-secondary" style="margin-top:10px;min-height:44px;" onClick="{{ backToToday }}">Back to Today</button>
+            </div>
+          </sc-if>
+
+        </div>
+      </x-import>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showManager }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div>
+          <h3 style="margin:0;">Manager Dashboard</h3>
+          <div style="font-size:12px;color:color-mix(in srgb, var(--color-text) 55%, transparent);margin-top:2px;">{{ todayDate }} · All shifts</div>
+        </div>
+        <button class="btn btn-secondary" style="margin-left:auto;" onClick="{{ exportReport }}"><i class="ph ph-file-xls"></i>Export daily Excel report</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+        <div class="card elev-sm">
+          <div class="card-kicker">Pending Approvals</div>
+          <div style="font-family:var(--font-heading);font-size:30px;font-weight:600;">{{ pendingCount }}</div>
+        </div>
+        <div class="card elev-sm">
+          <div class="card-kicker">Flagged Alerts</div>
+          <div style="font-family:var(--font-heading);font-size:30px;font-weight:600;">{{ flaggedCount }}</div>
+        </div>
+        <div class="card elev-sm">
+          <div class="card-kicker">Completed Today</div>
+          <div style="font-family:var(--font-heading);font-size:30px;font-weight:600;">{{ completedCount }}</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start;">
+        <div style="display:flex;flex-direction:column;gap:20px;">
+
+          <div>
+            <h5 style="margin:0 0 10px;color:color-mix(in srgb, var(--color-text) 65%, transparent);">Needs Attention</h5>
+            <sc-if value="{{ hasPending }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <sc-for list="{{ pendingSubmissions }}" as="sub" hint-placeholder-count="2">
+                  <div class="card elev-sm">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <span class="tag {{ sub.tagClass }}">{{ sub.statusLabel }}</span>
+                      <span class="tag tag-neutral">{{ sub.roleLabel }}</span>
+                      <span class="card-title" style="margin-left:4px;">{{ sub.sopName }}</span>
+                      <span style="margin-left:auto;font-size:11px;opacity:0.6;">{{ sub.actor }} · {{ sub.submittedAt }}</span>
+                    </div>
+                    <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:12px;opacity:0.8;padding:2px 0;">
+                      <sc-for list="{{ sub.metaEntries }}" as="m" hint-placeholder-count="2">
+                        <span><span style="opacity:0.6;">{{ m.k }}:</span> {{ m.v }}</span>
+                      </sc-for>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:2px;">
+                      <sc-if value="{{ sub.canAcknowledge }}" hint-placeholder-val="{{ false }}">
+                        <button class="btn btn-primary" onClick="{{ sub.acknowledge }}">Acknowledge</button>
+                      </sc-if>
+                      <sc-if value="{{ sub.canApproveReject }}" hint-placeholder-val="{{ false }}">
+                        <button class="btn btn-primary" onClick="{{ sub.approve }}">Approve</button>
+                        <button class="btn btn-secondary" onClick="{{ sub.reject }}">Reject</button>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noPending }}" hint-placeholder-val="{{ false }}">
+              <div class="card elev-sm" style="align-items:center;text-align:center;padding:24px;color:color-mix(in srgb, var(--color-text) 55%, transparent);font-size:13px;">
+                Nothing pending — all clear.
+              </div>
+            </sc-if>
+          </div>
+
+          <div>
+            <h5 style="margin:0 0 10px;color:color-mix(in srgb, var(--color-text) 65%, transparent);">Live SOP Status — Today</h5>
+            <table class="table">
+              <thead><tr><th>SOP</th><th>Role</th><th>Time</th><th>Status</th></tr></thead>
+              <tbody>
+                <sc-for list="{{ liveStatusRows }}" as="row" hint-placeholder-count="3">
+                  <tr>
+                    <td>{{ row.name }}</td>
+                    <td>{{ row.role }}</td>
+                    <td>{{ row.time }}</td>
+                    <td><span class="tag {{ row.tagClass }}">{{ row.statusLabel }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <div>
+          <h5 style="margin:0 0 10px;color:color-mix(in srgb, var(--color-text) 65%, transparent);">Audit Log</h5>
+          <div class="card elev-sm" style="max-height:520px;overflow:auto;gap:0;">
+            <sc-for list="{{ auditLogRows }}" as="entry" hint-placeholder-count="5">
+              <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--color-divider);">
+                <span style="font-size:11px;opacity:0.5;white-space:nowrap;flex:none;">{{ entry.time }}</span>
+                <span style="font-size:12.5px;opacity:0.9;">{{ entry.text }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:24px;right:24px;background:var(--color-surface);border:1px solid var(--color-divider);box-shadow:var(--shadow-md);padding:10px 16px;border-radius:var(--radius-md);font-size:13px;display:flex;align-items:center;gap:8px;">
+      <i class="ph ph-check-circle" style="color:var(--color-accent-300);"></i>{{ toast }}
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+const SOP_DEFS = {
+  opening: { id: 'opening', name: 'Opening Checklist', time: '6:45 AM', role: 'kitchen', roleLabel: 'Kitchen',
+    icon: 'ph-sun', steps: ['before','checklist','after','review'],
+    items: ['Unlock restaurant','Turn on lights & AC','Check kitchen equipment','Clean dining area','Check washrooms','Verify inventory','Mark staff attendance'] },
+  temp: { id: 'temp', name: 'Temperature Log', time: '11:00 AM', role: 'kitchen', roleLabel: 'Kitchen',
+    icon: 'ph-thermometer', steps: ['readings','photo','review'] },
+  cash: { id: 'cash', name: 'Closing Cash Reconciliation', time: '10:30 PM', role: 'foh', roleLabel: 'Front of House',
+    icon: 'ph-cash-register', steps: ['count','pos','photo','review'] },
+};
+const ROLE_ACTOR = { kitchen: 'Ravi Kumar', foh: 'Meera Iyer', manager: 'Aisha Sen (Manager)' };
+
+class Component extends DCLogic {
+  state = {
+    role: 'kitchen', screen: 'today', activeSopId: null, stepIndex: 0,
+    checked: {}, beforePhoto: false, afterPhoto: false, proofPhoto: false, tempPhoto: false,
+    timerSeconds: 0, timerRunning: false,
+    fridgeTemp: '', freezerTemp: '', cashCounted: '', posSales: '',
+    confirm: null, toast: null,
+    submissions: [
+      { id: 's1', sopId: 'temp', sopName: 'Temperature Log', role: 'kitchen', roleLabel: 'Kitchen', actor: 'Ravi Kumar',
+        submittedAt: '11:04 AM', status: 'flagged', meta: [ ['Fridge','4.1°C'], ['Freezer','-9°C'], ['Note','Freezer above -15°C threshold'] ] },
+    ],
+    auditLog: [
+      { time: '11:05 AM', text: 'System flagged Temperature Log — freezer reading -9°C exceeds -15°C safe threshold.' },
+      { time: '11:04 AM', text: 'Ravi Kumar submitted Temperature Log.' },
+      { time: '7:10 AM', text: 'Aisha Sen (Manager) approved Opening Checklist.' },
+      { time: '6:58 AM', text: 'Ravi Kumar submitted Opening Checklist for approval.' },
+    ],
+  };
+
+  componentWillUnmount() { if (this._timerHandle) clearInterval(this._timerHandle); }
+
+  nowTime() { return new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+  fmtDuration(s) { const m = Math.floor(s / 60); const sec = s % 60; return m + 'm ' + String(sec).padStart(2,'0') + 's'; }
+
+  selectRole(role) { this.setState({ role, screen: 'today', activeSopId: null }); }
+
+  openSop(sopId) {
+    if (this._timerHandle) { clearInterval(this._timerHandle); this._timerHandle = null; }
+    this.setState({
+      screen: 'flow', activeSopId: sopId, stepIndex: 0, checked: {},
+      beforePhoto: false, afterPhoto: false, proofPhoto: false, tempPhoto: false,
+      timerSeconds: 0, timerRunning: false, fridgeTemp: '', freezerTemp: '', cashCounted: '', posSales: '',
+    });
+  }
+
+  backToToday() { this.setState({ screen: 'today', activeSopId: null, confirm: null }); }
+
+  toggleCheck(i) { this.setState(s => ({ checked: { ...s.checked, [i]: !s.checked[i] } })); }
+  toggleBeforePhoto() { this.setState(s => ({ beforePhoto: !s.beforePhoto })); }
+  toggleAfterPhoto() { this.setState(s => ({ afterPhoto: !s.afterPhoto })); }
+  toggleProofPhoto() { this.setState(s => ({ proofPhoto: !s.proofPhoto })); }
+  toggleTempPhoto() { this.setState(s => ({ tempPhoto: !s.tempPhoto })); }
+
+  toggleTimer() {
+    if (this.state.timerRunning) {
+      clearInterval(this._timerHandle); this._timerHandle = null;
+      this.setState({ timerRunning: false });
+    } else {
+      this._timerHandle = setInterval(() => this.setState(s => ({ timerSeconds: s.timerSeconds + 1 })), 1000);
+      this.setState({ timerRunning: true });
+    }
+  }
+
+  currentStepKind() {
+    const def = SOP_DEFS[this.state.activeSopId];
+    return def ? def.steps[this.state.stepIndex] : null;
+  }
+
+  canProceed() {
+    const kind = this.currentStepKind();
+    const s = this.state;
+    if (kind === 'before') return s.beforePhoto;
+    if (kind === 'checklist') return SOP_DEFS.opening.items.every((_, i) => s.checked[i]);
+    if (kind === 'after') return s.afterPhoto;
+    if (kind === 'readings') return s.fridgeTemp !== '' && s.freezerTemp !== '';
+    if (kind === 'photo' && s.activeSopId === 'temp') return s.tempPhoto;
+    if (kind === 'count') return s.cashCounted !== '';
+    if (kind === 'pos') return s.posSales !== '';
+    return true;
+  }
+
+  nextStep() {
+    if (!this.canProceed()) return;
+    const def = SOP_DEFS[this.state.activeSopId];
+    if (this.state.stepIndex < def.steps.length - 1) {
+      this.setState(s => ({ stepIndex: s.stepIndex + 1 }));
+    } else {
+      this.submitFlow();
+    }
+  }
+
+  prevStep() {
+    if (this.state.stepIndex === 0) { this.backToToday(); return; }
+    this.setState(s => ({ stepIndex: s.stepIndex - 1 }));
+  }
+
+  submitFlow() {
+    if (this._timerHandle) { clearInterval(this._timerHandle); this._timerHandle = null; }
+    const s = this.state;
+    const def = SOP_DEFS[s.activeSopId];
+    const actor = ROLE_ACTOR[s.role];
+    const time = this.nowTime();
+    let status = 'pending', meta = [], confirm = null;
+
+    if (s.activeSopId === 'opening') {
+      const checkedCount = SOP_DEFS.opening.items.filter((_, i) => s.checked[i]).length;
+      meta = [ ['Checklist', checkedCount + '/' + SOP_DEFS.opening.items.length], ['Time taken', this.fmtDuration(s.timerSeconds)], ['Photos', (s.beforePhoto?1:0) + (s.afterPhoto?1:0) + '/2'] ];
+      status = 'pending';
+      confirm = { icon: 'ph-hourglass-medium', title: 'Submitted', message: 'Sent to your manager for approval, with a full timestamped record.' };
+    } else if (s.activeSopId === 'temp') {
+      const fridge = parseFloat(s.fridgeTemp), freezer = parseFloat(s.freezerTemp);
+      const flagged = (!isNaN(fridge) && fridge > 5) || (!isNaN(freezer) && freezer > -15);
+      meta = [ ['Fridge', s.fridgeTemp + '°C'], ['Freezer', s.freezerTemp + '°C'], ['Photo', s.tempPhoto ? 'Captured' : '—'] ];
+      status = flagged ? 'flagged' : 'logged';
+      confirm = flagged
+        ? { icon: 'ph-warning', title: 'Flagged', message: 'Reading is outside the safe range. Your manager has been notified automatically.' }
+        : { icon: 'ph-check-circle', title: 'Logged', message: 'Reading auto-logged. No manager action needed.' };
+    } else if (s.activeSopId === 'cash') {
+      const counted = parseFloat(s.cashCounted) || 0, pos = parseFloat(s.posSales) || 0;
+      const diff = counted - pos;
+      meta = [ ['Counted', '₹' + counted.toFixed(2)], ['POS total', '₹' + pos.toFixed(2)], ['Difference', (diff >= 0 ? '+' : '') + '₹' + diff.toFixed(2)], ['Proof', s.proofPhoto ? 'Attached' : 'None'] ];
+      status = 'pending';
+      confirm = { icon: 'ph-hourglass-medium', title: 'Submitted', message: 'Daily Excel summary generated. Sent to your manager for approval.' };
+    }
+
+    const submission = { id: 'sub-' + Date.now(), sopId: def.id, sopName: def.name, role: s.role, roleLabel: def.roleLabel, actor, submittedAt: time, status, meta };
+    const auditText = actor + ' submitted ' + def.name + (status === 'flagged' ? ' — flagged out of range.' : '.');
+
+    this.setState(prev => ({
+      screen: 'confirm', confirm,
+      submissions: [submission, ...prev.submissions],
+      auditLog: [{ time, text: auditText }, ...prev.auditLog],
+    }));
+  }
+
+  resolveSubmission(id, action) {
+    const time = this.nowTime();
+    this.setState(prev => {
+      const sub = prev.submissions.find(x => x.id === id);
+      if (!sub) return null;
+      const statusMap = { approve: 'approved', reject: 'rejected', acknowledge: 'acknowledged' };
+      const newStatus = statusMap[action];
+      const text = 'Aisha Sen (Manager) ' + statusMap[action] + ' ' + sub.sopName + ' from ' + sub.actor + '.';
+      return {
+        submissions: prev.submissions.map(x => x.id === id ? { ...x, status: newStatus } : x),
+        auditLog: [{ time, text }, ...prev.auditLog],
+      };
+    });
+  }
+
+  exportReport() {
+    this.setState({ toast: 'Daily Excel report exported to Manager Reports.' });
+    setTimeout(() => this.setState({ toast: null }), 3000);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const statusStyle = (status) => {
+      if (status === 'approved' || status === 'logged' || status === 'acknowledged') return { label: status === 'logged' ? 'Logged' : status === 'acknowledged' ? 'Acknowledged' : 'Approved', tagClass: 'tag-accent' };
+      if (status === 'pending') return { label: 'Pending Approval', tagClass: 'tag-outline' };
+      if (status === 'flagged') return { label: 'Flagged', tagClass: 'tag-outline' };
+      if (status === 'rejected') return { label: 'Rejected', tagClass: 'tag-neutral' };
+      return { label: 'Not Started', tagClass: 'tag-neutral' };
+    };
+
+    const latestFor = (sopId) => {
+      const list = s.submissions.filter(x => x.sopId === sopId);
+      return list.length ? list[0] : null;
+    };
+
+    const roleSops = Object.values(SOP_DEFS).filter(d => d.role === s.role);
+    const sopList = roleSops.map(d => {
+      const latest = latestFor(d.id);
+      const st = statusStyle(latest ? latest.status : 'not_started');
+      return { id: d.id, name: d.name, time: d.time, icon: d.icon, statusLabel: st.label, tagClass: st.tagClass, open: () => this.openSop(d.id) };
+    });
+
+    const activeSopId = s.activeSopId;
+    const def = activeSopId ? SOP_DEFS[activeSopId] : null;
+    const stepKind = def ? def.steps[s.stepIndex] : null;
+    const progressPercent = def ? Math.round(((s.stepIndex + 1) / def.steps.length) * 100) : 0;
+
+    const openingItems = SOP_DEFS.opening.items.map((label, i) => {
+      const checked = !!s.checked[i];
+      return { label, i, checked,
+        dotBg: checked ? 'var(--color-accent)' : 'transparent',
+        dotBorder: checked ? 'var(--color-accent)' : 'var(--color-divider)',
+        textOpacity: checked ? 0.55 : 1, textDecoration: checked ? 'line-through' : 'none',
+        toggle: () => this.toggleCheck(i) };
+    });
+    const openingCheckedCount = SOP_DEFS.opening.items.filter((_, i) => s.checked[i]).length;
+
+    const fridge = parseFloat(s.fridgeTemp), freezer = parseFloat(s.freezerTemp);
+    const tempOutOfRange = (!isNaN(fridge) && fridge > 5) || (!isNaN(freezer) && freezer > -15);
+    const counted = parseFloat(s.cashCounted) || 0, pos = parseFloat(s.posSales) || 0;
+    const diff = counted - pos;
+
+    const nextButtonLabel = (() => {
+      if (!def) return 'Continue';
+      const isLast = s.stepIndex === def.steps.length - 1;
+      return isLast ? 'Submit' : 'Continue';
+    })();
+
+    const stepIndexLabels = { before: 'Before Photo', checklist: 'Checklist', after: 'After Photo', review: 'Review & Submit',
+      readings: 'Readings', photo: def && def.id === 'temp' ? 'Equipment Photo' : 'Proof Photo', count: 'Cash Count', pos: 'Match POS' };
+
+    const pendingSubmissions = s.submissions
+      .filter(x => x.status === 'pending' || x.status === 'flagged')
+      .map(sub => {
+        const st = statusStyle(sub.status);
+        return {
+          id: sub.id, sopName: sub.sopName, roleLabel: sub.roleLabel, actor: sub.actor, submittedAt: sub.submittedAt,
+          statusLabel: st.label, tagClass: st.tagClass,
+          metaEntries: sub.meta.map(([k, v]) => ({ k, v })),
+          canAcknowledge: sub.sopId === 'temp' && sub.status === 'flagged',
+          canApproveReject: sub.sopId !== 'temp',
+          approve: () => this.resolveSubmission(sub.id, 'approve'),
+          reject: () => this.resolveSubmission(sub.id, 'reject'),
+          acknowledge: () => this.resolveSubmission(sub.id, 'acknowledge'),
+        };
+      });
+
+    const liveStatusRows = Object.values(SOP_DEFS).map(d => {
+      const latest = latestFor(d.id);
+      const st = statusStyle(latest ? latest.status : 'not_started');
+      return { name: d.name, role: d.roleLabel, time: latest ? latest.submittedAt : d.time, statusLabel: st.label, tagClass: st.tagClass };
+    });
+
+    return {
+      isRoleKitchen: s.role === 'kitchen', isRoleFoh: s.role === 'foh', isRoleManager: s.role === 'manager',
+      selectKitchen: () => this.selectRole('kitchen'), selectFoh: () => this.selectRole('foh'), selectManager: () => this.selectRole('manager'),
+      showMobile: s.role !== 'manager', showManager: s.role === 'manager', isDark: true,
+      staffName: ROLE_ACTOR[s.role] ? ROLE_ACTOR[s.role].split(' ')[0] : 'there',
+      todayDate: new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }),
+
+      mobileTitle: s.screen === 'today' ? 'Today' : s.screen === 'confirm' ? '' : (def ? def.name : ''),
+      onToday: s.screen === 'today', onFlow: s.screen === 'flow', onConfirm: s.screen === 'confirm',
+      sopList,
+
+      stepLabel: def ? ('Step ' + (s.stepIndex + 1) + ' of ' + def.steps.length + ' · ' + stepIndexLabels[stepKind]) : '',
+      progressPercent,
+      showOpeningBefore: stepKind === 'before' && activeSopId === 'opening',
+      showOpeningChecklist: stepKind === 'checklist',
+      showOpeningAfter: stepKind === 'after' && activeSopId === 'opening',
+      showOpeningReview: stepKind === 'review' && activeSopId === 'opening',
+      showTempReadings: stepKind === 'readings',
+      showTempPhoto: stepKind === 'photo' && activeSopId === 'temp',
+      showTempReview: stepKind === 'review' && activeSopId === 'temp',
+      showCashCount: stepKind === 'count',
+      showCashPos: stepKind === 'pos',
+      showCashPhoto: stepKind === 'photo' && activeSopId === 'cash',
+      showCashReview: stepKind === 'review' && activeSopId === 'cash',
+
+      beforePhoto: s.beforePhoto, notBeforePhoto: !s.beforePhoto, toggleBeforePhoto: () => this.toggleBeforePhoto(),
+      afterPhoto: s.afterPhoto, notAfterPhoto: !s.afterPhoto, toggleAfterPhoto: () => this.toggleAfterPhoto(),
+      tempPhoto: s.tempPhoto, notTempPhoto: !s.tempPhoto, toggleTempPhoto: () => this.toggleTempPhoto(),
+      proofPhoto: s.proofPhoto, notProofPhoto: !s.proofPhoto, toggleProofPhoto: () => this.toggleProofPhoto(),
+
+      timerDisplay: this.fmtDuration(s.timerSeconds), timerButtonLabel: s.timerRunning ? 'Pause' : (s.timerSeconds > 0 ? 'Resume' : 'Start Timer'), toggleTimer: () => this.toggleTimer(),
+      openingItems, openingCheckedLabel: openingCheckedCount + ' / ' + SOP_DEFS.opening.items.length + ' complete',
+      openingPhotoLabel: ((s.beforePhoto?1:0) + (s.afterPhoto?1:0)) + ' / 2 captured',
+
+      fridgeTemp: s.fridgeTemp, freezerTemp: s.freezerTemp,
+      onFridgeChange: (e) => this.setState({ fridgeTemp: e.target.value }),
+      onFreezerChange: (e) => this.setState({ freezerTemp: e.target.value }),
+      tempOutOfRange,
+      tempReviewTagClass: tempOutOfRange ? 'tag-outline' : 'tag-accent', tempReviewLabel: tempOutOfRange ? 'Flagged' : 'Logged',
+      tempReviewNote: tempOutOfRange ? 'This reading will alert your manager immediately upon submission.' : 'Within safe range — this will auto-log with no approval needed.',
+
+      cashCounted: s.cashCounted, posSales: s.posSales,
+      onCashChange: (e) => this.setState({ cashCounted: e.target.value }),
+      onPosChange: (e) => this.setState({ posSales: e.target.value }),
+      cashDiffLabel: (diff >= 0 ? '+' : '') + '₹' + diff.toFixed(2),
+      cashDiffColor: 'var(--color-accent-300)',
+
+      nextDisabled: !this.canProceed(), nextButtonLabel, nextStep: () => this.nextStep(), prevStep: () => this.prevStep(),
+      backToToday: () => this.backToToday(),
+
+      confirmIcon: s.confirm ? s.confirm.icon : 'ph-check-circle',
+      confirmTitle: s.confirm ? s.confirm.title : '',
+      confirmMessage: s.confirm ? s.confirm.message : '',
+
+      pendingCount: s.submissions.filter(x => x.status === 'pending' || x.status === 'flagged').length,
+      flaggedCount: s.submissions.filter(x => x.status === 'flagged').length,
+      completedCount: s.submissions.filter(x => x.status === 'approved' || x.status === 'logged' || x.status === 'acknowledged').length,
+      hasPending: pendingSubmissions.length > 0, noPending: pendingSubmissions.length === 0,
+      pendingSubmissions, liveStatusRows,
+      auditLogRows: s.auditLog,
+      exportReport: () => this.exportReport(),
+      hasToast: !!s.toast, toast: s.toast,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
