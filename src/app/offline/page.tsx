@@ -25,13 +25,13 @@ export default function OfflinePage() {
           <svg width="30" height="30" viewBox="0 0 256 256" fill="none" aria-hidden>
             <path
               d="M128 24 40 56v56c0 68 88 108 88 108s88-40 88-108V56Z"
-              stroke="#e7e5fe"
+              stroke="#ffe3c9"
               strokeWidth="14"
               strokeLinejoin="round"
             />
             <path
               d="M96 128l24 24 44-52"
-              stroke="#e7e5fe"
+              stroke="#ffe3c9"
               strokeWidth="14"
               strokeLinecap="round"
               strokeLinejoin="round"
