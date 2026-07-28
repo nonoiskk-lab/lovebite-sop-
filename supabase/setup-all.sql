@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- ROOS — one-paste setup. Runs everything in order:
---   0001_init  →  0002_policies  →  0003_storage  →  seed
+--   0001_init → 0002_policies → 0003_storage → 0004_harden → seed
 -- Paste this whole file into the Supabase SQL Editor and hit Run.
 -- (Generated from the files in migrations/ + seed.sql — edit those, not this.)
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -288,6 +288,21 @@ create policy "sop_photos insert own restaurant"
     bucket_id = 'sop-photos'
     and (storage.foldername(name))[1] = current_restaurant_id()::text
   );
+
+-- ─────────────────── 0004_harden_set_updated_at.sql ──────────────────
+-- Pin the trigger function's search_path (addresses the database linter's
+-- "function_search_path_mutable" warning). The function only touches NEW, so an
+-- empty search_path is safe.
+create or replace function set_updated_at()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
 
 -- ───────────────────────────── seed.sql ──────────────────────────────
 -- Demo seed for local dev. Matches the actors/SOPs used by the in-memory store.

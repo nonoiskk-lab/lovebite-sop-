@@ -15,7 +15,14 @@ import type { Role } from "@/lib/sops";
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const setRole = useStore((s) => s.setRole);
+  const init = useStore((s) => s.init);
   const [ready, setReady] = useState(!isSupabaseConfigured);
+
+  // Load data once we know who we are — after the session (and role) resolve in
+  // configured mode, or immediately in demo mode. Prevents an anon pre-fetch.
+  useEffect(() => {
+    if (ready) void init();
+  }, [ready, init]);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;

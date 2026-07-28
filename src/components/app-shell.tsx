@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useEffect } from "react";
 import { RoleSwitcher } from "@/components/role-switcher";
 import { UserMenu } from "@/components/auth/user-menu";
 import { AuthGate } from "@/components/auth/auth-gate";
@@ -12,16 +11,11 @@ import { Icon } from "@/components/icon";
 
 /**
  * Top-level chrome: the ROOS header + (demo) role switcher or (configured)
- * user menu, an error banner, and the auth-gated active screen. Kicks off the
- * one-time data load.
+ * user menu, an error banner, and the auth-gated active screen. The data load
+ * is kicked off by AuthGate once the session (if any) is established.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const init = useStore((s) => s.init);
   const error = useStore((s) => s.error);
-
-  useEffect(() => {
-    void init();
-  }, [init]);
 
   return (
     <div
