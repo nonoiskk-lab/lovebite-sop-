@@ -83,8 +83,9 @@ src/
   lib/
     sops.ts                    # SOP catalog + domain types (seed / source of truth)
     status.ts                  # status → label + tag-class mapping
-    store.ts                   # Zustand store — the in-memory data layer
-    data-service.ts            # the persistence seam (implement against Supabase)
+    store.ts                   # Zustand store — client cache + optimistic writes
+    data-service.ts            # the persistence seam (DataService interface)
+    data/                      # in-memory (demo) + Supabase impls + env selector
 supabase/
   migrations/0001_init.sql     # schema from the handoff's "Suggested DB shape"
   seed.sql                     # demo restaurant / users / SOPs

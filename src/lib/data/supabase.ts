@@ -149,7 +149,9 @@ export class SupabaseDataService implements DataService {
     audit: AuditEntry,
   ): Promise<void> {
     const uid = await this.currentUserId();
-    const { error } = await this.sb
+    // Return restaurant_id so the audit row can carry it — the audit_logs RLS
+    // insert policy requires restaurant_id = current_restaurant_id().
+    const { data, error } = await this.sb
       .from("sop_submissions")
       .update({
         status,
@@ -157,11 +159,14 @@ export class SupabaseDataService implements DataService {
         resolved_at: new Date().toISOString(),
         updated_by: uid,
       })
-      .eq("id", id);
+      .eq("id", id)
+      .select("restaurant_id")
+      .single();
     if (error) throw error;
 
     await this.sb.from("audit_logs").insert({
       id: audit.id,
+      restaurant_id: data.restaurant_id,
       actor_id: uid,
       action: audit.text,
       entity_type: "sop_submission",
