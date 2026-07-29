@@ -36,7 +36,7 @@ export function Toast() {
         zIndex: 50,
       }}
     >
-      <Icon name="CheckCircle" size={16} color="var(--color-accent-300)" />
+      <Icon name="CheckCircle" size={16} color="var(--color-success)" />
       {toast}
     </div>
   );

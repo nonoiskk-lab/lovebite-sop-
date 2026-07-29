@@ -69,13 +69,13 @@ export default function LoginPage() {
               alignItems: "flex-start",
               padding: "10px 12px",
               borderRadius: "var(--radius-md)",
-              background: "var(--color-accent-900)",
-              border: "1px solid var(--color-accent-700)",
+              background: "var(--color-accent-100)",
+              border: "1px solid var(--color-accent-200)",
               fontSize: 12,
-              color: "var(--color-accent-200)",
+              color: "var(--color-accent-700)",
             }}
           >
-            <Icon name="ShieldCheck" size={16} color="var(--color-accent-300)" style={{ flex: "none" }} />
+            <Icon name="ShieldCheck" size={16} color="var(--color-accent-500)" style={{ flex: "none" }} />
             Demo mode — no backend configured. Open the app directly; the role switcher lets you
             preview every view.
           </div>
@@ -104,7 +104,7 @@ export default function LoginPage() {
           </Field>
 
           {error && (
-            <div style={{ fontSize: 12, color: "var(--color-accent-300)" }}>{error}</div>
+            <div style={{ fontSize: 12, color: "var(--color-accent-600)" }}>{error}</div>
           )}
 
           <Button

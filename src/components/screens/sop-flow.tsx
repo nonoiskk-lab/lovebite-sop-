@@ -105,7 +105,7 @@ export function SopFlow({ sopId, stepIndex }: { sopId: string; stepIndex: number
             style={{
               height: 5,
               borderRadius: 4,
-              background: "var(--color-neutral-800)",
+              background: "var(--color-neutral-200)",
               overflow: "hidden",
               marginTop: 4,
             }}

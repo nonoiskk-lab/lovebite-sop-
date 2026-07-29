@@ -9,7 +9,7 @@ import * as React from "react";
  * dev preview. Content lives inside a fixed 390×844 scroll viewport.
  */
 function StatusBar() {
-  const c = "#fff";
+  const c = "#1c1c1c";
   return (
     <div
       style={{

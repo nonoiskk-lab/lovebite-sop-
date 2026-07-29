@@ -53,7 +53,7 @@ export function TodayScreen() {
                     width: 38,
                     height: 38,
                     borderRadius: "var(--radius-md)",
-                    background: "var(--color-neutral-800)",
+                    background: "var(--color-neutral-200)",
                     flex: "none",
                   }}
                 />
@@ -63,7 +63,7 @@ export function TodayScreen() {
                       width: "60%",
                       height: 12,
                       borderRadius: 4,
-                      background: "var(--color-neutral-800)",
+                      background: "var(--color-neutral-200)",
                     }}
                   />
                   <div
@@ -71,7 +71,7 @@ export function TodayScreen() {
                       width: "35%",
                       height: 9,
                       borderRadius: 4,
-                      background: "var(--color-neutral-800)",
+                      background: "var(--color-neutral-200)",
                       marginTop: 8,
                     }}
                   />
@@ -103,14 +103,14 @@ export function TodayScreen() {
                     width: 38,
                     height: 38,
                     borderRadius: "var(--radius-md)",
-                    background: "var(--color-accent-800)",
+                    background: "var(--color-accent-100)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     flex: "none",
                   }}
                 >
-                  <Icon name={sop.icon} size={19} color="var(--color-accent-200)" />
+                  <Icon name={sop.icon} size={19} color="var(--color-accent-600)" />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <CardTitle>{sop.name}</CardTitle>
@@ -145,7 +145,7 @@ export function TodayScreen() {
         <Icon
           name="ShieldCheck"
           size={15}
-          color="var(--color-accent-300)"
+          color="var(--color-accent-500)"
           style={{ flex: "none", marginTop: 1 }}
         />
         Every step is timestamped and photo-verified for compliance audit.

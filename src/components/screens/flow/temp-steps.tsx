@@ -53,17 +53,17 @@ export function ReadingsStep() {
             alignItems: "flex-start",
             padding: "10px 12px",
             borderRadius: "var(--radius-md)",
-            background: "var(--color-accent-900)",
-            border: "1px solid var(--color-accent-700)",
+            background: "var(--color-danger-bg)",
+            border: "1px solid var(--color-accent-200)",
           }}
         >
           <Icon
             name="Warning"
             size={16}
-            color="var(--color-accent-300)"
+            color="var(--color-accent-500)"
             style={{ flex: "none", marginTop: 1 }}
           />
-          <span style={{ fontSize: 12, color: "var(--color-accent-200)" }}>
+          <span style={{ fontSize: 12, color: "var(--color-accent-700)" }}>
             Reading outside safe range — this will alert the manager automatically.
           </span>
         </div>
@@ -84,7 +84,7 @@ export function TempReviewStep() {
         <SummaryRow label="Fridge">{fridgeTemp}°C</SummaryRow>
         <SummaryRow label="Freezer">{freezerTemp}°C</SummaryRow>
         <SummaryRow label="Status">
-          <Tag variant={outOfRange ? "tag-outline" : "tag-accent"}>
+          <Tag variant={outOfRange ? "tag-danger" : "tag-success"}>
             {outOfRange ? "Flagged" : "Logged"}
           </Tag>
         </SummaryRow>

@@ -12,7 +12,7 @@ function diffLabel(counted: string, pos: string): string {
   return `${d >= 0 ? "+" : ""}₹${d.toFixed(2)}`;
 }
 
-const DIFF_COLOR = "var(--color-accent-300)";
+const DIFF_COLOR = "var(--color-accent-600)";
 
 export function CashCountStep() {
   const cashCounted = useStore((s) => s.cashCounted);

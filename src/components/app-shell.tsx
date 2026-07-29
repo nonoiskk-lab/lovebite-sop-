@@ -62,13 +62,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             alignItems: "center",
             padding: "10px 14px",
             borderRadius: "var(--radius-md)",
-            background: "var(--color-accent-900)",
-            border: "1px solid var(--color-accent-700)",
+            background: "var(--color-danger-bg)",
+            border: "1px solid var(--color-accent-200)",
             fontSize: 13,
-            color: "var(--color-accent-200)",
+            color: "var(--color-accent-700)",
           }}
         >
-          <Icon name="Warning" size={16} color="var(--color-accent-300)" style={{ flex: "none" }} />
+          <Icon name="Warning" size={16} color="var(--color-accent-500)" style={{ flex: "none" }} />
           {error}
         </div>
       )}

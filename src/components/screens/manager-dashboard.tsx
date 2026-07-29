@@ -165,6 +165,7 @@ export function ManagerDashboard() {
           {/* Live SOP Status */}
           <section>
             <h5 style={{ margin: "0 0 10px", color: MUTED_HEADING }}>Live SOP Status — Today</h5>
+            <div className="table-wrap">
             <table className="table">
               <thead>
                 <tr>
@@ -187,6 +188,7 @@ export function ManagerDashboard() {
                 ))}
               </tbody>
             </table>
+            </div>
           </section>
         </div>
 

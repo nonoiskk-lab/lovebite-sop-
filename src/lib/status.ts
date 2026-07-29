@@ -1,6 +1,14 @@
 import type { SubmissionStatus } from "./sops";
 
-export type TagClass = "tag-accent" | "tag-outline" | "tag-neutral";
+export type TagClass =
+  | "tag-success"
+  | "tag-warning"
+  | "tag-danger"
+  | "tag-info"
+  | "tag-neutral"
+  // legacy aliases (kept for back-compat)
+  | "tag-accent"
+  | "tag-outline";
 
 export interface StatusStyle {
   label: string;
@@ -8,23 +16,23 @@ export interface StatusStyle {
 }
 
 /**
- * Maps a submission status to its display label + Nocturne tag class.
- * Mirrors `statusStyle()` from the prototype.
+ * Maps a submission status to its display label + status-pill class.
+ * Completed → green, pending → amber, flagged/rejected → red, in-progress → blue.
  */
 export function statusStyle(status: SubmissionStatus): StatusStyle {
   switch (status) {
     case "approved":
-      return { label: "Approved", tagClass: "tag-accent" };
+      return { label: "Approved", tagClass: "tag-success" };
     case "logged":
-      return { label: "Logged", tagClass: "tag-accent" };
+      return { label: "Logged", tagClass: "tag-success" };
     case "acknowledged":
-      return { label: "Acknowledged", tagClass: "tag-accent" };
+      return { label: "Acknowledged", tagClass: "tag-success" };
     case "pending":
-      return { label: "Pending Approval", tagClass: "tag-outline" };
+      return { label: "Pending Approval", tagClass: "tag-warning" };
     case "flagged":
-      return { label: "Flagged", tagClass: "tag-outline" };
+      return { label: "Flagged", tagClass: "tag-danger" };
     case "rejected":
-      return { label: "Rejected", tagClass: "tag-neutral" };
+      return { label: "Rejected", tagClass: "tag-danger" };
     case "not_started":
     default:
       return { label: "Not Started", tagClass: "tag-neutral" };

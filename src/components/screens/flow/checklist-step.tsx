@@ -38,7 +38,7 @@ export function ChecklistStep() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Icon name="Timer" size={18} color="var(--color-accent-300)" />
+          <Icon name="Timer" size={18} color="var(--color-accent-500)" />
           <span
             style={{
               fontFamily: "var(--font-heading)",

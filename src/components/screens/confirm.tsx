@@ -36,13 +36,13 @@ export function ConfirmScreen() {
           width: 64,
           height: 64,
           borderRadius: "50%",
-          background: "var(--color-accent-800)",
+          background: "var(--color-accent-100)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Icon name={confirm.icon} size={32} color="var(--color-accent-200)" />
+        <Icon name={confirm.icon} size={32} color="var(--color-accent-600)" />
       </div>
       <h3 style={{ margin: 0 }}>{confirm.title}</h3>
       <p style={{ margin: 0, fontSize: 13, opacity: 0.75, maxWidth: 260 }}>{confirm.message}</p>
