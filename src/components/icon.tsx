@@ -21,6 +21,7 @@ import {
   Sun,
   Thermometer,
   Timer,
+  Users,
   Warning,
   X,
 } from "@phosphor-icons/react";
@@ -52,6 +53,7 @@ const REGISTRY: Record<string, PhosphorIcon> = {
   Sun,
   Thermometer,
   Timer,
+  Users,
   Warning,
   X,
 };

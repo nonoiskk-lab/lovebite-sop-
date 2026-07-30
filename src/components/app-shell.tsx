@@ -44,7 +44,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               color: "var(--color-accent)",
             }}
           >
-            ROOS · Phase 1
+            LoveBITES · SOP
           </div>
           <h2 style={{ marginTop: 2, marginBottom: 0 }}>Daily SOP Execution</h2>
         </div>
@@ -59,6 +59,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Button variant="secondary">
               <Icon name="Clock" size={16} />
               Attendance
+            </Button>
+          </Link>
+          <Link href="/staff">
+            <Button variant="secondary">
+              <Icon name="Users" size={16} />
+              Staff
+            </Button>
+          </Link>
+          <Link href="/reports">
+            <Button variant="secondary">
+              <Icon name="ChartLineUp" size={16} />
+              Reports
             </Button>
           </Link>
           {isSupabaseConfigured ? <UserMenu /> : <RoleSwitcher />}

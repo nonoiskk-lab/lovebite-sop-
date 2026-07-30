@@ -104,6 +104,13 @@ export default function LoginPage() {
             />
           </Field>
 
+          <Link
+            href="/forgot-password"
+            style={{ fontSize: 12.5, color: "var(--color-accent)", textDecoration: "none", alignSelf: "flex-end" }}
+          >
+            Forgot password?
+          </Link>
+
           {error && (
             <div style={{ fontSize: 12, color: "var(--color-accent-600)" }}>{error}</div>
           )}
