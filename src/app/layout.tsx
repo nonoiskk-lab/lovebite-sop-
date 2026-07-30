@@ -11,11 +11,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ROOS · Daily SOP Execution",
+  title: "LoveBITES · Daily SOP Execution",
   description:
-    "Restaurant Operations OS — Phase 1: daily SOP execution for floor/kitchen staff and manager oversight.",
+    "LoveBITES OS — daily SOP execution for floor/kitchen staff and manager oversight.",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "ROOS SOP" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "LoveBITES SOP" },
   icons: {
     icon: "/icon.svg",
     apple: "/icon.svg",

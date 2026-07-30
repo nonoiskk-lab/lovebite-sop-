@@ -1,7 +1,7 @@
 {
-  "name": "ROOS — Daily SOP Execution",
-  "short_name": "ROOS SOP",
-  "description": "Restaurant Operations OS — daily SOP execution and manager oversight.",
+  "name": "LoveBITES OS — Daily SOP Execution",
+  "short_name": "LoveBITES SOP",
+  "description": "LoveBITES OS — daily SOP execution and manager oversight.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
