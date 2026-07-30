@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PasswordField } from "@/components/auth/password-field";
-import { GoogleButton } from "@/components/auth/google-button";
 import { createClient } from "@/lib/supabase/browser";
 import { SITE_URL } from "@/lib/supabase/config";
 import { isValidEmail, checkPassword, unmetPasswordRules } from "@/lib/validation";
@@ -220,15 +219,6 @@ export default function SignUpPage() {
                 {busy ? "Creating account…" : "Create Account"}
               </Button>
             </form>
-
-            {/* divider */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ flex: 1, height: 1, background: "var(--color-divider)" }} />
-              <span style={{ fontSize: 12, color: "var(--color-muted)" }}>or</span>
-              <div style={{ flex: 1, height: 1, background: "var(--color-divider)" }} />
-            </div>
-
-            <GoogleButton />
 
             <div style={{ textAlign: "center", fontSize: 13, color: "var(--color-body)" }}>
               Already have an account?{" "}
