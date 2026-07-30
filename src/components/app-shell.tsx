@@ -55,6 +55,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               Inventory
             </Button>
           </Link>
+          <Link href="/attendance">
+            <Button variant="secondary">
+              <Icon name="Clock" size={16} />
+              Attendance
+            </Button>
+          </Link>
           {isSupabaseConfigured ? <UserMenu /> : <RoleSwitcher />}
         </div>
       </header>
