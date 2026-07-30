@@ -1,5 +1,7 @@
 import type { Icon as PhosphorIcon, IconWeight } from "@phosphor-icons/react";
 import {
+  ArrowCircleDown,
+  ArrowCircleUp,
   ArrowLeft,
   CashRegister,
   Camera,
@@ -7,15 +9,20 @@ import {
   Check,
   CheckCircle,
   Clock,
+  ClockCountdown,
   CookingPot,
   FileXls,
   HourglassMedium,
+  MagnifyingGlass,
+  Package,
+  Plus,
   ShieldCheck,
   Storefront,
   Sun,
   Thermometer,
   Timer,
   Warning,
+  X,
 } from "@phosphor-icons/react";
 
 /**
@@ -24,6 +31,8 @@ import {
  * throughout, per the Nocturne spec.
  */
 const REGISTRY: Record<string, PhosphorIcon> = {
+  ArrowCircleDown,
+  ArrowCircleUp,
   ArrowLeft,
   CashRegister,
   Camera,
@@ -31,15 +40,20 @@ const REGISTRY: Record<string, PhosphorIcon> = {
   Check,
   CheckCircle,
   Clock,
+  ClockCountdown,
   CookingPot,
   FileXls,
   HourglassMedium,
+  MagnifyingGlass,
+  Package,
+  Plus,
   ShieldCheck,
   Storefront,
   Sun,
   Thermometer,
   Timer,
   Warning,
+  X,
 };
 
 export interface IconProps {

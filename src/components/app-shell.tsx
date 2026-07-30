@@ -1,10 +1,12 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { RoleSwitcher } from "@/components/role-switcher";
 import { UserMenu } from "@/components/auth/user-menu";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { Toast } from "@/components/toast";
+import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { Icon } from "@/components/icon";
@@ -46,7 +48,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <h2 style={{ marginTop: 2, marginBottom: 0 }}>Daily SOP Execution</h2>
         </div>
-        <div style={{ marginLeft: "auto" }}>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+          <Link href="/inventory">
+            <Button variant="secondary">
+              <Icon name="Package" size={16} />
+              Inventory
+            </Button>
+          </Link>
           {isSupabaseConfigured ? <UserMenu /> : <RoleSwitcher />}
         </div>
       </header>
