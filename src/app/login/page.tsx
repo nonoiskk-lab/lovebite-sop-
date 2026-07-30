@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { Button } from "@/components/ui/button";
@@ -49,14 +50,14 @@ export default function LoginPage() {
           <div
             style={{
               fontFamily: "var(--font-heading)",
-              fontWeight: 600,
+              fontWeight: 700,
               fontSize: 12,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
               color: "var(--color-accent)",
             }}
           >
-            ROOS
+            LoveBITES
           </div>
           <h3 style={{ margin: "4px 0 0" }}>Sign in</h3>
         </div>
@@ -123,6 +124,16 @@ export default function LoginPage() {
             Continue to demo
           </Button>
         )}
+
+        <div style={{ textAlign: "center", fontSize: 13, color: "var(--color-body)" }}>
+          New here?{" "}
+          <Link
+            href="/signup"
+            style={{ color: "var(--color-accent)", fontWeight: 600, textDecoration: "none" }}
+          >
+            Create an account
+          </Link>
+        </div>
       </Card>
     </div>
   );
