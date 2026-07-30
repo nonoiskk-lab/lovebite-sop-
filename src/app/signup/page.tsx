@@ -5,8 +5,10 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import { PasswordField } from "@/components/auth/password-field";
 import { ResendVerification } from "@/components/auth/resend-verification";
+import { MobileAuthPanel } from "@/components/auth/mobile-auth-panel";
 import { createClient } from "@/lib/supabase/browser";
 import { SITE_URL } from "@/lib/supabase/config";
 import { isValidEmail, checkPassword, unmetPasswordRules } from "@/lib/validation";
@@ -20,6 +22,8 @@ const METER_COLORS = [
 ];
 
 export default function SignUpPage() {
+  const router = useRouter();
+  const [method, setMethod] = useState<"mobile" | "email">("mobile");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -95,15 +99,17 @@ export default function SignUpPage() {
           >
             LoveBITES
           </div>
-          <h3 style={{ margin: "4px 0 0" }}>{done ? "Check your email" : "Create your account"}</h3>
+          <h3 style={{ margin: "4px 0 0" }}>
+            {method === "email" && done ? "Check your email" : "Create your account"}
+          </h3>
           <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--color-muted)" }}>
-            {done
+            {method === "email" && done
               ? `We sent a confirmation link to ${email}. Verify it to activate your account.`
               : "Join your restaurant's daily operations workspace."}
           </p>
         </div>
 
-        {done ? (
+        {method === "email" && done ? (
           <>
             <ResendVerification email={email} onUseAnotherEmail={() => setDone(false)} />
             <Link href="/login" style={{ textDecoration: "none" }}>
@@ -114,6 +120,33 @@ export default function SignUpPage() {
           </>
         ) : (
           <>
+            <div className="seg" role="radiogroup" aria-label="Sign-up method" style={{ display: "flex" }}>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={method === "mobile"}
+                className={`seg-opt${method === "mobile" ? " is-active" : ""}`}
+                onClick={() => setMethod("mobile")}
+                style={{ flex: 1, justifyContent: "center" }}
+              >
+                Mobile
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={method === "email"}
+                className={`seg-opt${method === "email" ? " is-active" : ""}`}
+                onClick={() => setMethod("email")}
+                style={{ flex: 1, justifyContent: "center" }}
+              >
+                Email
+              </button>
+            </div>
+
+            {method === "mobile" ? (
+              <MobileAuthPanel mode="signup" onAuthenticated={() => router.replace("/")} />
+            ) : (
+              <>
             <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <Field label="Full name" htmlFor="fullName">
                 <Input
@@ -223,6 +256,8 @@ export default function SignUpPage() {
                 {busy ? "Creating account…" : "Create Account"}
               </Button>
             </form>
+              </>
+            )}
 
             <div style={{ textAlign: "center", fontSize: 13, color: "var(--color-body)" }}>
               Already have an account?{" "}

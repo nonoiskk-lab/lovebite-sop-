@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/icon";
+import { MobileAuthPanel } from "@/components/auth/mobile-auth-panel";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [method, setMethod] = useState<"mobile" | "email">("mobile");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -82,49 +84,76 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <Field label="Email" htmlFor="email">
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </Field>
-          <Field label="Password" htmlFor="password">
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </Field>
-
-          <Link
-            href="/forgot-password"
-            style={{ fontSize: 12.5, color: "var(--color-accent)", textDecoration: "none", alignSelf: "flex-end" }}
+        <div className="seg" role="radiogroup" aria-label="Sign-in method" style={{ display: "flex" }}>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={method === "mobile"}
+            className={`seg-opt${method === "mobile" ? " is-active" : ""}`}
+            onClick={() => setMethod("mobile")}
+            style={{ flex: 1, justifyContent: "center" }}
           >
-            Forgot password?
-          </Link>
-
-          {error && (
-            <div style={{ fontSize: 12, color: "var(--color-accent-600)" }}>{error}</div>
-          )}
-
-          <Button
-            type="submit"
-            variant="primary"
-            block
-            disabled={busy || !isSupabaseConfigured}
-            style={{ minHeight: 44 }}
+            Mobile
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={method === "email"}
+            className={`seg-opt${method === "email" ? " is-active" : ""}`}
+            onClick={() => setMethod("email")}
+            style={{ flex: 1, justifyContent: "center" }}
           >
-            {busy ? "Signing in…" : "Sign in"}
-          </Button>
-        </form>
+            Email
+          </button>
+        </div>
+
+        {method === "mobile" ? (
+          <MobileAuthPanel mode="login" onAuthenticated={() => router.replace("/")} />
+        ) : (
+          <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <Field label="Email" htmlFor="email">
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Password" htmlFor="password">
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </Field>
+
+            <Link
+              href="/forgot-password"
+              style={{ fontSize: 12.5, color: "var(--color-accent)", textDecoration: "none", alignSelf: "flex-end" }}
+            >
+              Forgot password?
+            </Link>
+
+            {error && (
+              <div style={{ fontSize: 12, color: "var(--color-accent-600)" }}>{error}</div>
+            )}
+
+            <Button
+              type="submit"
+              variant="primary"
+              block
+              disabled={busy || !isSupabaseConfigured}
+              style={{ minHeight: 44 }}
+            >
+              {busy ? "Signing in…" : "Sign in"}
+            </Button>
+          </form>
+        )}
 
         {!isSupabaseConfigured && (
           <Button variant="secondary" block onClick={() => router.replace("/")}>
