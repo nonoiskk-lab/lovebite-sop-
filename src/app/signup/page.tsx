@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PasswordField } from "@/components/auth/password-field";
+import { ResendVerification } from "@/components/auth/resend-verification";
 import { createClient } from "@/lib/supabase/browser";
 import { SITE_URL } from "@/lib/supabase/config";
 import { isValidEmail, checkPassword, unmetPasswordRules } from "@/lib/validation";
@@ -103,11 +104,14 @@ export default function SignUpPage() {
         </div>
 
         {done ? (
-          <Link href="/login" style={{ textDecoration: "none" }}>
-            <Button variant="primary" block style={{ minHeight: 44 }}>
-              Go to Sign In
-            </Button>
-          </Link>
+          <>
+            <ResendVerification email={email} onUseAnotherEmail={() => setDone(false)} />
+            <Link href="/login" style={{ textDecoration: "none" }}>
+              <Button variant="secondary" block style={{ minHeight: 44 }}>
+                Go to Sign In
+              </Button>
+            </Link>
+          </>
         ) : (
           <>
             <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
