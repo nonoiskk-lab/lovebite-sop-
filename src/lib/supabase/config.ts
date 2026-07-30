@@ -19,5 +19,15 @@ export const SUPABASE_ANON_KEY =
 export const isSupabaseConfigured: boolean =
   SUPABASE_URL.length > 0 && SUPABASE_ANON_KEY.length > 0;
 
+/**
+ * Public site origin, used to build OAuth + email (verification / reset)
+ * redirect URLs. Prefers the env var, then the live browser origin, then prod.
+ */
+export const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (typeof window !== "undefined"
+    ? window.location.origin
+    : "https://lovebite-sop.vercel.app");
+
 /** Storage bucket that holds SOP photos. */
 export const PHOTO_BUCKET = "sop-photos";
